@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 5173,
+      "url": "https://localhost:5173"
+    },
+    {
+      "name": "dev-http",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite", "--mode", "http", "--port", "5180"],
+      "port": 5180
+    }
+  ]
+}

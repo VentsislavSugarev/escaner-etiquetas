@@ -125,12 +125,13 @@ button {
   background: rgba(0, 0, 0, 0.7);
 }
 .count {
-  min-width: 4.5em;
+  min-width: 3.2em;
   font-size: 1.8rem;
   font-weight: 800;
   text-align: center;
 }
 .plus-button {
+  white-space: nowrap;
   flex: 1;
   padding: 22px 12px;
   border: none;

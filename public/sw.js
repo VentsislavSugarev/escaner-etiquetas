@@ -1,6 +1,6 @@
 // Service worker: guarda una copia de la app para que abra aunque no haya conexión.
 // Estrategia "primero red": si hay internet descarga lo último (y lo guarda); si no, usa la copia.
-const CACHE = "escaner-v2";
+const CACHE = "escaner-v3";
 
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim()));

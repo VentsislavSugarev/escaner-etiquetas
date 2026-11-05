@@ -65,7 +65,8 @@ startButton.addEventListener("click", async () => {
   startError.classList.add("hidden");
   unlockAudio(); // tiene que ser aquí, dentro del toque, por iPhone
   try {
-    const [s, scanner] = await Promise.all([startCamera(video), createScanner()]);
+    const s = await startCamera(video);
+    const scanner = createScanner();
     stream = s;
     torchButton.classList.toggle("hidden", !hasTorch(s));
     startScreen.classList.add("hidden");

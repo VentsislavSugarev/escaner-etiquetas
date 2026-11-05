@@ -4,16 +4,65 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#000000" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="Etiquetas" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <title>Escáner de etiquetas</title>
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
     <!-- playsinline + muted: obligatorios para que iPhone reproduzca el vídeo dentro de la página -->
     <video id="video" playsinline muted autoplay></video>
+    <!-- Capa transparente encima del vídeo donde se dibujan los recuadros -->
+    <canvas id="overlay"></canvas>
 
-    <div id="message" class="message">Pulsa para empezar</div>
+    <!-- Interfaz encima de todo -->
+    <div id="ui">
+      <div id="message" class="message">Pulsa para empezar</div>
+      <div id="warning" class="warning hidden"></div>
 
-    <button id="start" class="big-button">Empezar</button>
+      <div class="toolbar">
+        <button id="stats" class="chip">—</button>
+        <span class="spacer"></span>
+        <button id="torch" class="icon-button hidden" aria-label="Linterna">🔦</button>
+        <button id="history-open" class="icon-button" aria-label="Historial">📋</button>
+      </div>
+      <pre id="codes" class="codes hidden"></pre>
+
+      <span class="spacer"></span>
+
+      <div id="counter-bar" class="counter-bar hidden">
+        <button id="minus" class="small-button" aria-label="Quitar una">−1</button>
+        <div id="count" class="count">0 / 0</div>
+        <button id="plus" class="plus-button">+1 pegada</button>
+      </div>
+
+      <button id="start" class="start-button">Empezar</button>
+    </div>
+
+    <!-- Pantalla de historial -->
+    <section id="history" class="history hidden">
+      <header class="history-header">
+        <h2>Historial</h2>
+        <button id="history-close" class="icon-button" aria-label="Cerrar">✕</button>
+      </header>
+      <div class="history-actions">
+        <button id="history-export">Exportar CSV</button>
+        <button id="history-clear" class="danger">Borrar todo</button>
+      </div>
+      <div class="history-list">
+        <table>
+          <thead>
+            <tr><th>Fecha</th><th>Pegatina</th><th>Packs</th></tr>
+          </thead>
+          <tbody id="history-rows"></tbody>
+        </table>
+        <p id="history-empty" class="history-empty">Todavía no hay productos escaneados.</p>
+      </div>
+    </section>
 
     <script type="module" src="/src/main.ts"></script>
   </body>

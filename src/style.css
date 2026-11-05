@@ -1,24 +1,38 @@
+:root {
+  --blue: #1e6fff;
+  --green: #00c853;
+  --red: #ff3b30;
+  --yellow: #ffc400;
+  --panel: rgba(14, 16, 22, 0.78);
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
 html,
 body {
   margin: 0;
   height: 100%;
   background: #000;
   color: #fff;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   overflow: hidden;
   -webkit-user-select: none;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 button {
   font: inherit;
   color: inherit;
+  border: none;
   cursor: pointer;
   touch-action: manipulation; /* evita el zoom por doble toque en los botones */
 }
+button:active {
+  transform: scale(0.97);
+}
 
 /* Vídeo y canvas ocupan toda la pantalla, uno encima del otro.
-   "cover" rellena la pantalla recortando lo que sobre (overlay.ts tiene esto en cuenta). */
+   "cover" rellena la pantalla recortando lo que sobre (overlay.ts lo tiene en cuenta). */
 #video,
 #overlay {
   position: fixed;
@@ -30,156 +44,282 @@ button {
   object-fit: cover;
 }
 
-/* Capa de interfaz: en columna; solo los botones reciben toques. */
-#ui {
+/* Capa de interfaz: en columna; solo los botones reciben toques
+   (así el resto no tapa el vídeo al tocar). */
+.ui {
   position: fixed;
   inset: 0;
   display: flex;
   flex-direction: column;
-  padding: env(safe-area-inset-top, 0) 0 env(safe-area-inset-bottom, 0);
+  gap: 8px;
+  padding: calc(env(safe-area-inset-top, 0px) + 10px) 12px calc(env(safe-area-inset-bottom, 0px) + 12px);
   pointer-events: none;
 }
-#ui button {
+.ui button {
   pointer-events: auto;
 }
-
 .spacer {
   flex: 1;
 }
+.hidden {
+  display: none !important;
+}
 
-.message {
-  padding: 14px 16px;
-  font-size: 1.5rem;
-  font-weight: 700;
-  line-height: 1.25;
+/* ---------- Tarjeta superior ---------- */
+.card {
+  padding: 12px 16px 14px;
+  border-radius: 20px;
+  background: var(--panel);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   text-align: center;
-  background: rgba(0, 0, 0, 0.65);
-  overflow-wrap: anywhere;
+  transition: background-color 0.2s;
 }
-.message.searching {
-  background: rgba(20, 60, 160, 0.85);
+.card.searching {
+  background: rgba(20, 70, 190, 0.88);
 }
-.message.complete {
-  background: rgba(10, 130, 50, 0.9);
+.card.complete {
+  background: rgba(0, 140, 60, 0.92);
 }
-.message .ean {
-  font-family: ui-monospace, Menlo, Consolas, monospace;
-  font-size: 1.7rem;
-  letter-spacing: 0.02em;
+.card-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+.card-main {
+  margin-top: 2px;
+  font-size: 1.45rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+.card-sub {
+  margin-top: 4px;
+  font-size: 1rem;
+  opacity: 0.9;
+}
+/* Número de la pegatina: el principio se repite entre productos, lo importante es el final */
+.ean {
+  font-family: var(--mono);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.ean-head {
+  font-size: 1.25rem;
+  opacity: 0.6;
+}
+.ean-tail {
+  font-size: 2.1rem;
+  letter-spacing: 0.04em;
+  color: #fff;
 }
 
 .warning {
-  padding: 10px 16px;
-  font-size: 1rem;
-  font-weight: 600;
-  text-align: center;
-  background: #f5b400;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: var(--yellow);
   color: #000;
+  font-weight: 700;
+  text-align: center;
   overflow-wrap: anywhere;
 }
 
+/* ---------- Barra de botones pequeños ---------- */
 .toolbar {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
 }
-
 .chip {
-  padding: 4px 10px;
-  border: none;
+  padding: 5px 10px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.55);
-  font-size: 0.8rem;
+  background: var(--panel);
+  font-size: 0.75rem;
+  opacity: 0.85;
 }
-
-.icon-button {
-  width: 48px;
-  height: 48px;
-  border: none;
+.round-button {
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.55);
-  font-size: 1.4rem;
+  background: var(--panel);
+  font-size: 1.3rem;
 }
-.icon-button.on {
-  background: #f5b400;
+.round-button.on {
+  background: var(--yellow);
 }
-
 .codes {
-  margin: 0 12px;
-  padding: 6px 10px;
+  margin: 0;
+  padding: 8px 10px;
   max-height: 30vh;
   overflow: auto;
-  font-size: 0.75rem;
-  background: rgba(0, 0, 0, 0.6);
-  border-radius: 8px;
+  border-radius: 10px;
+  background: var(--panel);
+  font-size: 0.72rem;
+  pointer-events: auto;
 }
 
-.counter-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 0 12px 16px;
+/* ---------- Veredicto: ¿es esta la pegatina? ---------- */
+.verdict {
+  align-self: center;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-size: 1.3rem;
+  font-weight: 800;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+.verdict.match {
+  background: var(--green);
+  color: #002910;
+  animation: pop 0.25s ease-out;
+}
+.verdict.nomatch {
+  background: var(--red);
+}
+@keyframes pop {
+  from {
+    transform: scale(0.85);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* ---------- Contador ---------- */
+.counter {
   padding: 12px;
-  border-radius: 20px;
-  background: rgba(0, 0, 0, 0.7);
+  border-radius: 22px;
+  background: var(--panel);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
 }
-.count {
-  min-width: 3.2em;
-  font-size: 1.8rem;
-  font-weight: 800;
-  text-align: center;
+.dots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
 }
-.plus-button {
-  white-space: nowrap;
-  flex: 1;
-  padding: 22px 12px;
-  border: none;
+.dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  box-sizing: border-box;
+}
+.dot.filled {
+  background: var(--green);
+  border-color: var(--green);
+}
+.counter-row {
+  display: flex;
+  gap: 10px;
+}
+.minus-button {
+  padding: 0 18px;
   border-radius: 16px;
-  background: #1e6fff;
-  font-size: 1.5rem;
-  font-weight: 800;
-}
-.plus-button:disabled {
-  background: #2e7d32;
-}
-.small-button {
-  padding: 22px 14px;
-  border: none;
-  border-radius: 16px;
-  background: #444;
+  background: #3a3d45;
   font-size: 1.1rem;
   font-weight: 700;
 }
-
-.start-button {
-  align-self: center;
-  margin-bottom: 32px;
-  padding: 20px 48px;
-  border: none;
+.minus-button:disabled {
+  opacity: 0.35;
+}
+.plus-button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 20px 22px;
   border-radius: 16px;
-  background: #1e6fff;
-  font-size: 1.4rem;
-  font-weight: 700;
+  background: var(--blue);
+  font-size: 1.45rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.plus-button:disabled {
+  background: var(--green);
+  color: #002910;
+}
+.count {
+  font-family: var(--mono);
+  font-size: 1.35rem;
+  opacity: 0.9;
 }
 
-/* Pantalla de historial */
+/* ---------- Pantalla de inicio ---------- */
+.start-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: radial-gradient(circle at 50% 30%, #18264a, #05070c 70%);
+  text-align: center;
+}
+.start-icon {
+  width: 88px;
+  height: 88px;
+  border-radius: 22px;
+}
+.start-screen h1 {
+  margin: 16px 0 8px;
+  font-size: 1.7rem;
+}
+.steps {
+  max-width: 22rem;
+  margin: 8px 0 28px;
+  padding-left: 1.3em;
+  text-align: left;
+  line-height: 1.5;
+  opacity: 0.9;
+}
+.steps li {
+  margin: 6px 0;
+}
+.ok {
+  color: var(--green);
+}
+.start-button {
+  width: min(100%, 22rem);
+  padding: 20px;
+  border-radius: 18px;
+  background: var(--blue);
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+.start-button:disabled {
+  opacity: 0.6;
+}
+.start-error {
+  max-width: 22rem;
+  color: #ff8a80;
+}
+
+/* ---------- Historial ---------- */
 .history {
   position: fixed;
   inset: 0;
   display: flex;
   flex-direction: column;
-  padding: env(safe-area-inset-top, 0) 0 env(safe-area-inset-bottom, 0);
-  background: #111;
+  padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
+  background: #0d0f14;
 }
 .history-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 16px;
+  padding: 10px 16px 0;
 }
 .history-header h2 {
   margin: 0;
+}
+.history-summary {
+  margin: 4px 16px 12px;
+  opacity: 0.7;
 }
 .history-actions {
   display: flex;
@@ -189,9 +329,8 @@ button {
 .history-actions button {
   flex: 1;
   padding: 14px;
-  border: none;
   border-radius: 12px;
-  background: #1e6fff;
+  background: var(--blue);
   font-weight: 700;
 }
 .history-actions .danger {
@@ -205,22 +344,23 @@ button {
 .history-list table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+}
+.history-list th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  opacity: 0.6;
 }
 .history-list th,
 .history-list td {
-  padding: 8px 4px;
-  border-bottom: 1px solid #333;
+  padding: 10px 4px;
+  border-bottom: 1px solid #23262e;
   text-align: left;
 }
 .history-list td:nth-child(2) {
-  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-family: var(--mono);
 }
 .history-empty {
-  color: #aaa;
+  opacity: 0.6;
   text-align: center;
-}
-
-.hidden {
-  display: none !important;
 }

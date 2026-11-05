@@ -16,20 +16,51 @@ export async function startCamera(video: HTMLVideoElement): Promise<MediaStream>
 
   video.srcObject = stream;
   await video.play();
+  void setContinuousFocus(stream);
   return stream;
 }
 
-// La linterna no está en los tipos estándar de TypeScript; la declaramos aquí.
-type TorchCapabilities = MediaTrackCapabilities & { torch?: boolean };
+// Las capacidades extra (linterna, enfoque) no están en los tipos estándar; las declaramos aquí.
+type ExtraCapabilities = MediaTrackCapabilities & { torch?: boolean; focusMode?: string[] };
+
+function capabilities(stream: MediaStream): ExtraCapabilities | undefined {
+  return stream.getVideoTracks()[0]?.getCapabilities?.() as ExtraCapabilities | undefined;
+}
+
+// En Android pide enfoque automático continuo (por defecto algunos móviles enfocan una sola vez).
+async function setContinuousFocus(stream: MediaStream): Promise<void> {
+  if (!capabilities(stream)?.focusMode?.includes("continuous")) return;
+  try {
+    await stream.getVideoTracks()[0].applyConstraints({
+      advanced: [{ focusMode: "continuous" } as MediaTrackConstraintSet],
+    });
+  } catch {
+    // No pasa nada si no se puede.
+  }
+}
 
 // ¿Este móvil/navegador permite encender la linterna? (Android sí; iPhone normalmente no)
 export function hasTorch(stream: MediaStream): boolean {
-  const track = stream.getVideoTracks()[0];
-  const caps = track?.getCapabilities?.() as TorchCapabilities | undefined;
-  return caps?.torch === true;
+  return capabilities(stream)?.torch === true;
 }
 
 export async function setTorch(stream: MediaStream, on: boolean): Promise<void> {
   const track = stream.getVideoTracks()[0];
   await track.applyConstraints({ advanced: [{ torch: on } as MediaTrackConstraintSet] });
+}
+
+// ¿Sigue viva la cámara? (iPhone la corta al cambiar de app o bloquear la pantalla)
+export function isCameraAlive(stream: MediaStream | null): boolean {
+  return stream?.getVideoTracks()[0]?.readyState === "live";
+}
+
+// Mantiene la pantalla encendida mientras se usa la app (si el navegador lo permite).
+// El navegador lo suelta al salir de la app, así que hay que volver a pedirlo al volver.
+export async function keepScreenOn(): Promise<void> {
+  const nav = navigator as Navigator & { wakeLock?: { request(type: "screen"): Promise<unknown> } };
+  try {
+    await nav.wakeLock?.request("screen");
+  } catch {
+    // p. ej. batería baja: el sistema no lo permite
+  }
 }

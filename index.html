@@ -19,36 +19,62 @@
     <!-- Capa transparente encima del vídeo donde se dibujan los recuadros -->
     <canvas id="overlay"></canvas>
 
-    <!-- Interfaz encima de todo -->
-    <div id="ui">
-      <div id="message" class="message">Pulsa para empezar</div>
+    <!-- Interfaz encima del vídeo -->
+    <div id="ui" class="ui">
+      <!-- Tarjeta superior: qué hay que buscar -->
+      <div id="card" class="card">
+        <div id="card-label" class="card-label">Paso 1</div>
+        <div id="card-main" class="card-main">Escanea la etiqueta del producto</div>
+        <div id="card-sub" class="card-sub">La del distribuidor, con 17 cifras</div>
+      </div>
       <div id="warning" class="warning hidden"></div>
 
       <div class="toolbar">
         <button id="stats" class="chip">—</button>
         <span class="spacer"></span>
-        <button id="torch" class="icon-button hidden" aria-label="Linterna">🔦</button>
-        <button id="history-open" class="icon-button" aria-label="Historial">📋</button>
+        <button id="torch" class="round-button hidden" aria-label="Linterna">🔦</button>
+        <button id="history-open" class="round-button" aria-label="Historial">🕘</button>
       </div>
       <pre id="codes" class="codes hidden"></pre>
 
       <span class="spacer"></span>
 
-      <div id="counter-bar" class="counter-bar hidden">
-        <button id="minus" class="small-button" aria-label="Quitar una">−1</button>
-        <div id="count" class="count">0 / 0</div>
-        <button id="plus" class="plus-button">+1 pegada</button>
-      </div>
+      <!-- Aviso grande: ¿la pegatina que veo es la buena? -->
+      <div id="verdict" class="verdict hidden"></div>
 
-      <button id="start" class="start-button">Empezar</button>
+      <!-- Contador de pegatinas pegadas -->
+      <div id="counter" class="counter hidden">
+        <div id="dots" class="dots"></div>
+        <div class="counter-row">
+          <button id="minus" class="minus-button" aria-label="Quitar una">−1</button>
+          <button id="plus" class="plus-button">
+            <span id="plus-text">+1 pegada</span>
+            <span id="count" class="count">0 / 0</span>
+          </button>
+        </div>
+      </div>
     </div>
+
+    <!-- Pantalla de inicio -->
+    <section id="start-screen" class="start-screen">
+      <img src="/icon-192.png" alt="" class="start-icon" />
+      <h1>Escáner de etiquetas</h1>
+      <ol class="steps">
+        <li>Escanea la <b>etiqueta del producto</b>.</li>
+        <li>Pasa la cámara por la <b>tira de pegatinas</b>: la correcta sale en <b class="ok">verde</b>.</li>
+        <li>Pulsa <b>+1 pegada</b> por cada una que pegues.</li>
+      </ol>
+      <button id="start" class="start-button">Empezar</button>
+      <p id="start-error" class="start-error hidden"></p>
+    </section>
 
     <!-- Pantalla de historial -->
     <section id="history" class="history hidden">
       <header class="history-header">
         <h2>Historial</h2>
-        <button id="history-close" class="icon-button" aria-label="Cerrar">✕</button>
+        <button id="history-close" class="round-button" aria-label="Cerrar">✕</button>
       </header>
+      <p id="history-summary" class="history-summary"></p>
       <div class="history-actions">
         <button id="history-export">Exportar CSV</button>
         <button id="history-clear" class="danger">Borrar todo</button>

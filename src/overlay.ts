@@ -9,6 +9,7 @@ export interface Box {
   points: Point[]; // esquinas del código en píxeles del vídeo REAL (p. ej. 1920×1080)
   color: string;
   lineWidth: number;
+  label?: string; // texto pequeño encima del recuadro (p. ej. las últimas cifras)
 }
 
 // Calcula cómo se ha escalado y recortado el vídeo con "object-fit: cover".
@@ -40,17 +41,39 @@ export function drawBoxes(canvas: HTMLCanvasElement, video: HTMLVideoElement, bo
   const { scale, offsetX, offsetY } = coverTransform(video.videoWidth, video.videoHeight, viewW, viewH);
 
   for (const box of boxes) {
+    const pts = box.points.map((p) => ({ x: p.x * scale + offsetX, y: p.y * scale + offsetY }));
+
+    // Recuadro, con un poco de relleno del mismo color
     ctx.beginPath();
-    box.points.forEach((p, i) => {
-      const x = p.x * scale + offsetX;
-      const y = p.y * scale + offsetY;
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
+    pts.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
     ctx.closePath();
-    ctx.strokeStyle = box.color;
-    ctx.lineWidth = box.lineWidth;
     ctx.lineJoin = "round";
+    ctx.lineWidth = box.lineWidth;
+    ctx.strokeStyle = box.color;
     ctx.stroke();
+    ctx.globalAlpha = 0.15;
+    ctx.fillStyle = box.color;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    if (box.label) drawLabel(ctx, box.label, box.color, pts);
   }
+}
+
+// Etiqueta tipo "pastilla" encima de la esquina superior izquierda del recuadro.
+function drawLabel(ctx: CanvasRenderingContext2D, text: string, color: string, pts: Point[]): void {
+  const minX = Math.min(...pts.map((p) => p.x));
+  const minY = Math.min(...pts.map((p) => p.y));
+  ctx.font = "700 15px system-ui, -apple-system, sans-serif";
+  const w = ctx.measureText(text).width + 14;
+  const h = 22;
+  const x = minX;
+  const y = Math.max(minY - h - 4, 2);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, 6);
+  ctx.fill();
+  ctx.fillStyle = "#fff";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, x + 7, y + h / 2 + 1);
 }

@@ -29,7 +29,8 @@ export function classify(rawInput: string): Classification {
     const ean = raw.slice(0, 13); // los 13 primeros = la pegatina que buscamos
     if (isValidEan13(ean)) {
       const packs = Number(raw.slice(13)); // los 4 últimos = nº de pegatinas
-      return { kind: "product", raw, ean, packs };
+      // 0000 no tiene sentido (no habría nada que pegar): se trata como código desconocido.
+      if (packs >= 1) return { kind: "product", raw, ean, packs };
     }
   }
 

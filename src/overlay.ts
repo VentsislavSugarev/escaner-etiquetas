@@ -23,6 +23,39 @@ export function coverTransform(videoW: number, videoH: number, viewW: number, vi
   };
 }
 
+export interface Rect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+// La parte del vídeo que de verdad se ve en pantalla (en píxeles del vídeo).
+// Con "cover" se recortan los lados (o arriba y abajo), y además la tarjeta de arriba y el
+// contador de abajo tapan otra parte: no tiene sentido analizar lo que no se ve.
+// Así cada fotograma tiene menos píxeles (más rápido) y no salen avisos de códigos que
+// la persona ni siquiera está viendo.
+// top/bottom: la franja de la pantalla (en px CSS) que no tapan la tarjeta ni el contador.
+export function visibleRegion(
+  videoW: number,
+  videoH: number,
+  viewW: number,
+  viewH: number,
+  top = 0,
+  bottom = viewH,
+): Rect {
+  const { scale, offsetX, offsetY } = coverTransform(videoW, videoH, viewW, viewH);
+  const x = Math.max(0, Math.floor(-offsetX / scale));
+  const y = Math.min(videoH - 1, Math.max(0, Math.floor((top - offsetY) / scale)));
+  const yEnd = Math.min(videoH, Math.ceil((bottom - offsetY) / scale));
+  return {
+    x,
+    y,
+    width: Math.min(videoW - x, Math.ceil(viewW / scale)),
+    height: Math.max(1, yEnd - y), // al menos 1 fila aunque los paneles lo tapen todo
+  };
+}
+
 export function drawBoxes(canvas: HTMLCanvasElement, video: HTMLVideoElement, boxes: Box[]): void {
   // El canvas debe tener tantos píxeles como la pantalla (x devicePixelRatio para que se vea nítido).
   const dpr = window.devicePixelRatio || 1;
@@ -48,6 +81,10 @@ export function drawBoxes(canvas: HTMLCanvasElement, video: HTMLVideoElement, bo
     pts.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
     ctx.closePath();
     ctx.lineJoin = "round";
+    // Borde oscuro debajo: así el recuadro se ve también sobre pegatinas verdes, rojas o azules.
+    ctx.lineWidth = box.lineWidth + 4;
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.6)";
+    ctx.stroke();
     ctx.lineWidth = box.lineWidth;
     ctx.strokeStyle = box.color;
     ctx.stroke();
@@ -73,7 +110,7 @@ function drawLabel(ctx: CanvasRenderingContext2D, text: string, color: string, p
   ctx.beginPath();
   ctx.roundRect(x, y, w, h, 6);
   ctx.fill();
-  ctx.fillStyle = "#fff";
+  ctx.fillStyle = "#000"; // negro: se lee sobre todos los colores de recuadro (verde, amarillo, rojo, azul, blanco)
   ctx.textBaseline = "middle";
   ctx.fillText(text, x + 7, y + h / 2 + 1);
 }

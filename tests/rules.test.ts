@@ -44,6 +44,10 @@ describe("classify", () => {
     expect(classify("87202458470880003")).toEqual({ kind: "unknown", raw: "87202458470880003" });
   });
 
+  it("producto con 0000 packs es desconocido (no habría nada que pegar)", () => {
+    expect(classify("87202458470870000").kind).toBe("unknown");
+  });
+
   it("13 dígitos con control inválido es desconocido", () => {
     expect(classify("8720245847088").kind).toBe("unknown");
   });

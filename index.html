@@ -22,19 +22,20 @@
     <!-- Interfaz encima del vídeo -->
     <div id="ui" class="ui">
       <!-- Tarjeta superior: qué hay que buscar -->
-      <div id="card" class="card">
+      <div id="card" class="card" aria-live="polite">
         <div id="card-label" class="card-label">Paso 1</div>
         <div id="card-main" class="card-main">Escanea la etiqueta del producto</div>
         <div id="card-sub" class="card-sub">La del distribuidor, con 17 cifras</div>
       </div>
-      <div id="warning" class="warning hidden"></div>
-
       <div class="toolbar">
         <button id="stats" class="chip">—</button>
         <span class="spacer"></span>
+        <button id="sound" class="round-button" aria-label="Silenciar">🔊</button>
         <button id="torch" class="round-button hidden" aria-label="Linterna">🔦</button>
         <button id="history-open" class="round-button" aria-label="Historial">🕘</button>
       </div>
+      <!-- Debajo de la barra: así los botones de arriba no se mueven cuando aparece -->
+      <div id="warning" class="warning hidden"></div>
       <pre id="codes" class="codes hidden"></pre>
 
       <span class="spacer"></span>
@@ -45,6 +46,8 @@
       <!-- Contador de pegatinas pegadas -->
       <div id="counter" class="counter hidden">
         <div id="dots" class="dots"></div>
+        <!-- Encima del +1 a propósito: si se toca dos veces donde estaba el +1, no reinicia la caja -->
+        <button id="again" class="again-button hidden">↻ Otra caja igual</button>
         <div class="counter-row">
           <button id="minus" class="minus-button" aria-label="Quitar una">−1</button>
           <button id="plus" class="plus-button">
@@ -82,7 +85,7 @@
       <div class="history-list">
         <table>
           <thead>
-            <tr><th>Fecha</th><th>Pegatina</th><th>Packs</th></tr>
+            <tr><th>Fecha</th><th>Pegatina</th><th>Pegadas</th></tr>
           </thead>
           <tbody id="history-rows"></tbody>
         </table>

@@ -1,18 +1,34 @@
-// Abre la cámara trasera en alta resolución y la conecta al <video>.
+// Cámara trasera en alta resolución. "ideal" = lo intenta, pero si el móvil no llega acepta lo que haya.
+const VIDEO: MediaTrackConstraints = {
+  facingMode: "environment", // cámara trasera
+  width: { ideal: 1920 },
+  height: { ideal: 1080 },
+};
+
+// Abre la cámara trasera y la conecta al <video>.
 export async function startCamera(video: HTMLVideoElement): Promise<MediaStream> {
   if (!navigator.mediaDevices?.getUserMedia) {
     throw new Error("Este navegador no permite usar la cámara (¿falta HTTPS?).");
   }
 
-  // "ideal" = lo intenta, pero si el móvil no llega acepta lo que haya.
-  const stream = await navigator.mediaDevices.getUserMedia({
-    audio: false,
-    video: {
-      facingMode: "environment", // cámara trasera
-      width: { ideal: 1920 },
-      height: { ideal: 1080 },
-    },
-  });
+  let stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: VIDEO });
+
+  // Android: Chrome a veces abre la gran angular, que no enfoca de cerca. La principal se llama
+  // "camera2 0, facing back". (Los nombres solo se ven después de dar permiso; en iPhone nunca coincide.)
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  const main = devices.find((d) => d.kind === "videoinput" && d.label.startsWith("camera2 0, facing back"));
+  const track = stream.getVideoTracks()[0];
+  if (main && track.getSettings().deviceId !== main.deviceId) {
+    track.stop(); // muchos Android no pueden abrir dos cámaras a la vez
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: { deviceId: { exact: main.deviceId }, width: VIDEO.width, height: VIDEO.height },
+      });
+    } catch {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: VIDEO }); // si falla, la de siempre
+    }
+  }
 
   video.srcObject = stream;
   await video.play();
@@ -49,9 +65,15 @@ export async function setTorch(stream: MediaStream, on: boolean): Promise<void> 
   await track.applyConstraints({ advanced: [{ torch: on } as MediaTrackConstraintSet] });
 }
 
-// ¿Sigue viva la cámara? (iPhone la corta al cambiar de app o bloquear la pantalla)
+// ¿Sigue viva la cámara? (iPhone la corta o la deja "muda" al cambiar de app o bloquear la pantalla)
 export function isCameraAlive(stream: MediaStream | null): boolean {
-  return stream?.getVideoTracks()[0]?.readyState === "live";
+  const track = stream?.getVideoTracks()[0];
+  return track?.readyState === "live" && !track.muted;
+}
+
+// Nombre de la cámara abierta (se ve en el panel de depuración, para saber si es la buena)
+export function cameraName(stream: MediaStream | null): string {
+  return stream?.getVideoTracks()[0]?.label ?? "";
 }
 
 // Mantiene la pantalla encendida mientras se usa la app (si el navegador lo permite).
